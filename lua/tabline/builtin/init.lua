@@ -1,8 +1,5 @@
 local builtin = {}
 
-builtin.lsp = require("tabline.builtin.lsp")
-builtin.gitsigns = require("tabline.builtin.gitsigns")
-
 function builtin.filename()
   if vim.bo.buftype == "help" then return "Help" end
   if vim.bo.buftype == "quickfix" then return "Quickfix" end
@@ -64,6 +61,24 @@ function builtin.diagnostic_error()
     severity = vim.diagnostic.severity.ERROR,
   })
   return n > 0 and ("E: %d"):format(n) or ""
+end
+
+function builtin.lsp_progress()
+  return require("tabline.builtin.lsp.progress").get_progress_message()
+end
+
+function builtin.compress_lsp_progress(...)
+  return require("tabline.builtin.lsp.progress").compress_progress_message(
+    ...
+  )
+end
+
+function builtin.gitsigns_status()
+  return require("tabline.builtin.gitsigns").status()
+end
+
+function builtin.gitsigns_branch()
+  return require("tabline.builtin.gitsigns").branch()
 end
 
 return builtin
