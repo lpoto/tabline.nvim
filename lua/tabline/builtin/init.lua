@@ -11,6 +11,11 @@ function builtin.filename()
   return vim.fn.fnamemodify(name, ":~:.")
 end
 
+function builtin.compress_filename(filename, max_width)
+  if filename:len() == 0 or max_width <= 0 then return end
+  return vim.fn.fnamemodify(filename, ":t")
+end
+
 function builtin.filename_suffix()
   local s = "   "
   if vim.bo.modified then

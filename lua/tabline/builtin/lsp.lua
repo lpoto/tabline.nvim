@@ -13,6 +13,14 @@ function lsp.get_progress_message()
   return ""
 end
 
+function lsp.compress_progress_message()
+  if not progress_listener_set_up then util.__set_up_progress_listener() end
+  if type(current_progress_message) == "table" then
+    return "  " .. (current_progress_message.compressed_message or "")
+  end
+  return ""
+end
+
 local last_redrawn = nil
 function util.__set_up_progress_listener()
   progress_listener_set_up = true
@@ -35,6 +43,10 @@ function util.__set_up_progress_listener()
           val.message,
           val.percentage
         ),
+        compressed_message = util.format_compressed_message(
+          client.name,
+          val.percentage
+        ),
         updated = vim.loop.now(),
       }
     elseif val.kind == "report" and data then
@@ -44,6 +56,12 @@ function util.__set_up_progress_listener()
           data.title,
           val.message,
           val.percentage,
+          data.state
+        ),
+        compressed_message = util.format_compressed_message(
+          client.name,
+          val.percentage,
+          nil,
           data.state
         ),
         updated = vim.loop.now(),
@@ -59,6 +77,11 @@ function util.__set_up_progress_listener()
             client.name,
             data.title,
             val.message or "Complete"
+          ),
+          compressed_message = util.format_compressed_message(
+            client.name,
+            val.percentage,
+            "Complete"
           ),
           complete = true,
           updated = vim.loop.now(),
@@ -142,6 +165,25 @@ function util.format_message(client_name, title, message, percentage, state)
     .. " "
     .. percentage
     .. message
+  if state then s = util.spinner_frames[state] .. " " .. s end
+  return s
+end
+
+function util.format_compressed_message(
+  client_name,
+  percentage,
+  message,
+  state
+)
+  if type(client_name) ~= "string" then client_name = "" end
+  if type(percentage) == "number" then
+    percentage = string.format("%3d", percentage) .. "%%  "
+  else
+    percentage = ""
+  end
+  if type(message) ~= "string" then message = "" end
+  if message:len() > 10 then message = "" end
+  local s = util.format_title("", client_name) .. " " .. percentage .. message
   if state then s = util.spinner_frames[state] .. " " .. s end
   return s
 end

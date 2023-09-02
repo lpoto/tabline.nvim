@@ -55,10 +55,14 @@ function state.draw()
         local content = item.content
         if type(item.content) == "function" then content = item.content() end
         if type(content) ~= "string" then content = vim.inspect(content) end
+        if item.compress ~= nil and type(item.compress) ~= "function" then
+          return error("Invalid compress: " .. vim.inspect(item.compress))
+        end
         if parts[align] == nil then parts[align] = {} end
         table.insert(parts[align], {
           content = content,
           highlight = item.highlight or enum.DEFAULT_HIGHLIGHT,
+          compress = item.compress,
         })
       end
       local str_parts = {}
@@ -68,14 +72,27 @@ function state.draw()
           for _, v2 in ipairs(parts[v] or {}) do
             local c = v2.content
             if c:len() > 0 then
-              local n = vim.fn.strchars(c)
-              if n < width + 2 then
-                c = vim.fn.strcharpart(c, 0, width - 2)
+              local n = vim.fn.strcharlen(c)
+              if n > width - 2 then
+                if v2.compress ~= nil then
+                  c = v2.compress(c, width - 2)
+                  if type(c) == "string" then n = vim.fn.strcharlen(c) end
+                end
               end
-              c = "%#" .. v2.highlight .. "#" .. c .. "%#" .. "Normal" .. "#"
-              str_parts[v] = str_parts[v] .. " " .. c .. " "
-              width = width - n - 2
-              if width <= 2 then break end
+              if
+                type(c) == "string" and vim.fn.strcharlen(c) <= width - 2
+              then
+                c = "%#"
+                  .. v2.highlight
+                  .. "#"
+                  .. c
+                  .. "%#"
+                  .. "Normal"
+                  .. "#"
+                str_parts[v] = str_parts[v] .. " " .. c .. " "
+                width = width - n - 2
+                if width <= 2 then break end
+              end
             end
           end
         end

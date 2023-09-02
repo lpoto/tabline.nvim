@@ -29,6 +29,10 @@ config.current = {
         align = enum.ALIGN.LEFT,
         highlight = "Tabline",
         content = builtin.lsp.get_progress_message,
+        -- NOTE: a compress function(cur_value, max_width) -> string
+        -- may be provided, in case the current value  cannot fit on the
+        -- tabline. This function can shorten the string and make it fit.
+        compress = builtin.lsp.compress_progress_message,
       },
     },
     {
@@ -40,6 +44,7 @@ config.current = {
         align = enum.ALIGN.CENTER,
         highlight = "Special",
         content = builtin.filename,
+        compress = builtin.compress_filename,
       },
       {
         align = enum.ALIGN.CENTER,
@@ -72,13 +77,13 @@ config.current = {
       -- unless gitsigns plugin is attached
       {
         align = enum.ALIGN.RIGHT,
-        highlight = "TablineFill",
-        content = builtin.gitsigns.status,
+        highlight = "Function",
+        content = builtin.gitsigns.branch,
       },
       {
         align = enum.ALIGN.RIGHT,
-        highlight = "Function",
-        content = builtin.gitsigns.branch,
+        highlight = "TablineFill",
+        content = builtin.gitsigns.status,
       },
     },
   },
