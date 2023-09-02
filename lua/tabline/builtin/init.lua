@@ -1,5 +1,8 @@
 local builtin = {}
 
+builtin.lsp = require("tabline.builtin.lsp")
+builtin.gitsigns = require("tabline.builtin.gitsigns")
+
 function builtin.filename()
   if vim.bo.buftype == "help" then return "Help" end
   if vim.bo.buftype == "quickfix" then return "Quickfix" end
@@ -56,23 +59,6 @@ function builtin.diagnostic_error()
     severity = vim.diagnostic.severity.ERROR,
   })
   return n > 0 and ("E: %d"):format(n) or ""
-end
-
-function builtin.gitsigns_status()
-  if
-    type(vim.b.gitsigns_status) == "string"
-    and vim.b.gitsigns_status:len() > 0
-  then
-    return vim.b.gitsigns_status
-  end
-  return ""
-end
-
-function builtin.gitsigns_branch()
-  local branch = type(vim.g.gitsigns_head) == "string" and vim.g.gitsigns_head
-    or ""
-  if branch == "" then return "" end
-  return branch
 end
 
 return builtin

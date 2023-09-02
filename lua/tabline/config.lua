@@ -20,11 +20,34 @@ config.current = {
         -- Items with same alignment, are displayed in the order they are
         -- defined.
         align = enum.ALIGN.LEFT,
-        highlight = "Tabline",
+        highlight = "Function",
         -- NOTE: an item's content may be a string or any function
         -- returning a string.
         content = builtin.tabcount,
       },
+      {
+        align = enum.ALIGN.LEFT,
+        highlight = "Tabline",
+        content = builtin.lsp.get_progress_message,
+      },
+    },
+    {
+      {
+        align = enum.ALIGN.CENTER,
+        content = "   ",
+      },
+      {
+        align = enum.ALIGN.CENTER,
+        highlight = "Special",
+        content = builtin.filename,
+      },
+      {
+        align = enum.ALIGN.CENTER,
+        highlight = "TablineFill",
+        content = builtin.filename_suffix,
+      },
+    },
+    {
       {
         align = enum.ALIGN.CENTER,
         highlight = "DiagnosticError",
@@ -45,35 +68,17 @@ config.current = {
         highlight = "DiagnosticHint",
         content = builtin.diagnostic_hint,
       },
-    },
-    {
-      {
-        align = enum.ALIGN.CENTER,
-        content = "   ",
-      },
-      {
-        align = enum.ALIGN.CENTER,
-        highlight = "Special",
-        content = builtin.filename,
-      },
-      {
-        align = enum.ALIGN.CENTER,
-        highlight = "Comment",
-        content = builtin.filename_suffix,
-      },
-    },
-    {
       -- NOTE: These two items will display nothing,
       -- unless gitsigns plugin is attached
       {
         align = enum.ALIGN.RIGHT,
-        highlight = "Comment",
-        content = builtin.gitsigns_status,
+        highlight = "TablineFill",
+        content = builtin.gitsigns.status,
       },
       {
         align = enum.ALIGN.RIGHT,
         highlight = "Function",
-        content = builtin.gitsigns_branch,
+        content = builtin.gitsigns.branch,
       },
     },
   },
