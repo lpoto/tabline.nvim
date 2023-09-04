@@ -14,23 +14,18 @@ function builtin.compress_filename(filename, max_width)
 end
 
 function builtin.filename_suffix()
-  local s = "   "
   if vim.bo.modified then
-    s = "[+]"
+    return "[+]"
   elseif vim.bo.readonly then
-    s = "[~]"
+    return "[~]"
   end
-  return s
+  return ""
 end
 
 function builtin.tabcount()
   local tabs = #vim.api.nvim_list_tabpages()
   if tabs > 1 then
-    return "  Tab ["
-      .. vim.api.nvim_tabpage_get_number(0)
-      .. "/"
-      .. tabs
-      .. "]  "
+    return "Tab [" .. vim.api.nvim_tabpage_get_number(0) .. "/" .. tabs .. "]"
   end
   return ""
 end

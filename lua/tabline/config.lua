@@ -6,6 +6,11 @@ local config = {}
 config.current = {
   hide_statusline = false,
   redraw_events = {},
+  space = {
+    char = "—",
+    highlight = "TablineFill",
+    edge = "•",
+  },
   -- NOTE: items displayed in the tabline are grouped
   -- in sections. Each sections receives equal space
   -- in the tabline.
@@ -20,7 +25,7 @@ config.current = {
         -- Items with same alignment, are displayed in the order they are
         -- defined.
         align = enum.ALIGN.LEFT,
-        highlight = "Function",
+        highlight = "TablineSel",
         -- NOTE: an item's content may be a string or any function
         -- returning a string.
         content = builtin.tabcount,
@@ -38,11 +43,12 @@ config.current = {
     {
       {
         align = enum.ALIGN.CENTER,
-        content = "   ",
+        content = "",
+        empty_width = 5,
       },
       {
         align = enum.ALIGN.CENTER,
-        highlight = "Special",
+        highlight = "TablineSel",
         content = builtin.filename,
         compress = builtin.compress_filename,
       },
@@ -50,6 +56,7 @@ config.current = {
         align = enum.ALIGN.CENTER,
         highlight = "TablineFill",
         content = builtin.filename_suffix,
+        min_width = 6,
       },
     },
     {
@@ -77,13 +84,13 @@ config.current = {
       -- unless gitsigns plugin is attached
       {
         align = enum.ALIGN.RIGHT,
-        highlight = "Function",
-        content = builtin.gitsigns_branch,
+        highlight = "TablineFill",
+        content = builtin.gitsigns_status,
       },
       {
         align = enum.ALIGN.RIGHT,
-        highlight = "TablineFill",
-        content = builtin.gitsigns_status,
+        highlight = "TablineSel",
+        content = builtin.gitsigns_branch,
       },
     },
   },
@@ -91,6 +98,64 @@ config.current = {
 
 function config.update(opts)
   if type(opts) ~= "table" then opts = {} end
+  if opts.space ~= nil then
+    if type(opts.space) ~= "table" then
+      vim.notify(
+        "Invalid space: " .. vim.inspect(opts.space),
+        vim.log.levels.ERROR,
+        {
+          title = enum.TITLE,
+        }
+      )
+      opts.space = nil
+    else
+      if
+        opts.space.highlight ~= nil
+        and type(opts.space.highlight) ~= "string"
+      then
+        vim.notify(
+          "Invalid space.highlight: " .. vim.inspect(opts.space.highlight),
+          vim.log.levels.ERROR,
+          {
+            title = enum.TITLE,
+          }
+        )
+        opts.space.highlight = nil
+      end
+      if
+        opts.space.char ~= nil
+        and (
+          type(opts.space.char) ~= "string"
+          or vim.fn.strcharlen(opts.space.char) ~= 1
+        )
+      then
+        vim.notify(
+          "Invalid space.char: " .. vim.inspect(opts.space.highlight),
+          vim.log.levels.ERROR,
+          {
+            title = enum.TITLE,
+          }
+        )
+        opts.space.char = nil
+      end
+      if
+        opts.space.edge ~= nil
+        and (
+          type(opts.space.edge) ~= "string"
+          or vim.fn.strcharlen(opts.space.edge) > 1
+        )
+      then
+        vim.notify(
+          "Invalid space.edge: " .. vim.inspect(opts.space.highlight),
+          vim.log.levels.ERROR,
+          {
+            title = enum.TITLE,
+          }
+        )
+        opts.space.edge = nil
+      end
+    end
+  end
   config.current = vim.tbl_extend("force", config.current, opts)
 end
 

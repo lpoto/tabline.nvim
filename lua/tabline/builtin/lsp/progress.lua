@@ -195,10 +195,11 @@ function LspProgressMessage:format(max_width)
     max_width = max_width - vim.fn.strcharlen(s2)
   elseif max_width >= 2 then
     s = "  " .. s
+    max_width = max_width - 2
   end
 
   if type(self.percentage) == "number" and max_width >= 5 then
-    local s2 = string.format(" %3d", self.percentage) .. "%%"
+    local s2 = string.format(" %3d", self.percentage) .. "٪"
     if added_title then
       s2 = ":" .. s2
       added_title = false
