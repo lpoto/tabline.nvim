@@ -101,7 +101,7 @@ function state.draw()
                   c = v2.compress({
                     buf = buf,
                     content = c,
-                    max_width = width - 2
+                    max_width = width - 2,
                   })
                   if type(c) == "string" then n = vim.fn.strcharlen(c) end
                 end
@@ -136,10 +136,12 @@ function state.draw()
                 if width <= 2 then break end
               end
             else
-              if v2.min_width ~= nil then
-                local n = math.min(v2.min_width, width)
-                str_parts[v] = str_parts[v] .. state.get_spacer(n)
-                width = width - n
+              if v2.empty_width ~= nil then
+                local n = math.min(v2.empty_width, width)
+                if n > 0 then
+                  str_parts[v] = str_parts[v] .. state.get_spacer(n)
+                  width = width - n
+                end
               end
             end
           end

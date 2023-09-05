@@ -44,7 +44,7 @@ config.current = {
       {
         align = enum.ALIGN.CENTER,
         content = "",
-        empty_width = 5,
+        empty_width = 6,
       },
       {
         align = enum.ALIGN.CENTER,
@@ -56,7 +56,7 @@ config.current = {
         align = enum.ALIGN.CENTER,
         highlight = "TablineFill",
         content = builtin.filename_suffix,
-        min_width = 6,
+        empty_width = 6,
       },
     },
     {
