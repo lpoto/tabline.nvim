@@ -17,7 +17,7 @@ local LspProgressMessage = {
   },
 }
 
-function lsp.get_progress_message()
+function lsp.get_progress_message(_)
   LspProgressMessage:set_up()
   if type(LspProgressMessage.current_message) == "table" then
     return LspProgressMessage.current_message:format()
@@ -25,7 +25,8 @@ function lsp.get_progress_message()
   return ""
 end
 
-function lsp.compress_progress_message(_, max_width)
+function lsp.compress_progress_message(opts)
+  local max_width = opts.max_width
   LspProgressMessage:set_up()
   if type(LspProgressMessage.current_message) == "table" then
     return LspProgressMessage.current_message:format(max_width)
