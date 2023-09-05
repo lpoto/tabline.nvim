@@ -8,11 +8,17 @@ state.cur_tabline = ""
 
 local error
 
+local buf = nil
+
 function state.draw()
   if state.error ~= nil then return vim.api.nvim_buf_get_name(0) end
 
-  if not state.check_buftype() then return state.cur_tabline end
-  if not state.check_wintype() then return state.cur_tabline end
+  if state.check_buftype() and state.check_wintype() then
+    buf = vim.api.nvim_get_current_buf()
+  end
+  if type(buf) ~= "number" or not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
 
   local sections = config.current.sections
   if type(sections) ~= "table" then
@@ -59,7 +65,10 @@ function state.draw()
         ---@type any
         local content = item.content
         if content == nil then content = "" end
-        if type(item.content) == "function" then content = item.content() end
+        if type(item.content) == "function" then
+          ---@diagnostic disable-next-line
+          content = item.content({ buf = buf })
+        end
         if type(content) ~= "string" then content = vim.inspect(content) end
         if item.compress ~= nil and type(item.compress) ~= "function" then
           return error("Invalid compress: " .. vim.inspect(item.compress))
