@@ -1,16 +1,15 @@
 local gitsigns = {}
 
-function gitsigns.status()
-  if
-    type(vim.b.gitsigns_status) == "string"
-    and vim.b.gitsigns_status:len() > 0
-  then
-    return vim.b.gitsigns_status
+function gitsigns.status(opts)
+  local ok, status =
+    pcall(vim.api.nvim_buf_get_var, opts.bufnr, "gitsigns_status")
+  if ok and type(status) == "string" and status:len() > 0 then
+    return status
   end
   return ""
 end
 
-function gitsigns.branch()
+function gitsigns.branch(_)
   local branch = type(vim.g.gitsigns_head) == "string" and vim.g.gitsigns_head
     or ""
   if branch == "" then return "" end
