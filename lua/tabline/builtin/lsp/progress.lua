@@ -130,8 +130,17 @@ end
 
 function LspProgressMessage:schedule_deletion(delay)
   if type(delay) ~= "number" or delay < 0 then delay = 5000 end
+  if type(LspProgressMessage.deletion_schedule) == "number" then
+    if
+      LspProgressMessage.deletion_schedule > vim.loop.now() + delay - 500
+    then
+      return
+    end
+  end
+  LspProgressMessage.deletion_schedule = vim.loop.now() + delay
   LspProgressMessage.last_redrawn = nil
   vim.defer_fn(function()
+    LspProgressMessage.deletion_schedule = nil
     if type(LspProgressMessage.current_message) ~= "table" then return end
     if
       type(LspProgressMessage.current_message.updated) ~= "number"
