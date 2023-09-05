@@ -11,7 +11,7 @@ function builtin.filename(opts)
 end
 
 function builtin.compress_filename(opts)
-  local filename = opts.filename
+  local filename = opts.content
   local max_width = opts.max_width
   if filename:len() == 0 or max_width <= 0 then return end
   return vim.fn.fnamemodify(filename, ":t")

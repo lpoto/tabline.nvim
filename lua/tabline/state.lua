@@ -98,7 +98,11 @@ function state.draw()
               local n = vim.fn.strcharlen(c)
               if n > width - 2 then
                 if v2.compress ~= nil then
-                  c = v2.compress(c, width - 2)
+                  c = v2.compress({
+                    buf = buf,
+                    content = c,
+                    max_width = width - 2
+                  })
                   if type(c) == "string" then n = vim.fn.strcharlen(c) end
                 end
               end
