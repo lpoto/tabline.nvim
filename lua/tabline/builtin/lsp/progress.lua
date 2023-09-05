@@ -41,7 +41,11 @@ function LspProgressMessage:set_up()
   LspProgressMessage.is_set_up = true
   local handler = function(_, result, ctx)
     local client_id = ctx.client_id
-    local client = vim.lsp.get_client_by_id(client_id)
+    local ok, client = pcall(vim.lsp.get_client_by_id, client_id)
+    local client_name = client_id
+    if ok and type(client) == "table" and client.name then
+      client_name = client.name
+    end
 
     local val = result.value
     local token = result.token
@@ -53,7 +57,7 @@ function LspProgressMessage:set_up()
     if val.kind == LspProgressMessage.kind.BEGIN then
       data = notifications.add_data(client_id, token, val)
       LspProgressMessage.current_message = LspProgressMessage:new({
-        name = client.name,
+        name = client_name,
         title = val.title,
         message = val.message,
         percentage = val.percentage,
@@ -62,7 +66,7 @@ function LspProgressMessage:set_up()
       })
     elseif val.kind == LspProgressMessage.kind.REPORT and data then
       LspProgressMessage.current_message = LspProgressMessage:new({
-        name = client.name,
+        name = client_name,
         title = val.title or data.title,
         message = val.message,
         percentage = val.percentage,
@@ -75,7 +79,7 @@ function LspProgressMessage:set_up()
         LspProgressMessage.current_message = nil
       else
         LspProgressMessage.current_message = LspProgressMessage:new({
-          name = client.name,
+          name = client_name,
           title = val.title or data.title,
           message = val.message or "Done",
           percentage = val.percentage,
@@ -87,10 +91,34 @@ function LspProgressMessage:set_up()
     end
     LspProgressMessage:redraw()
   end
+  local messages_handler = function(opts)
+    if type(opts) ~= "table" then return end
+    local title = opts.title
+    if type(title) ~= "string" then title = "" end
+    local message = opts.message
+    if type(message) ~= "string" or message:len() == 0 then return end
+
+    LspProgressMessage.current_message = LspProgressMessage:new({
+      name = title,
+      message = message,
+      kind = LspProgressMessage.kind.END,
+      updated = vim.loop.now(),
+    })
+    LspProgressMessage:schedule_deletion(2500)
+  end
+
   local f = vim.lsp.handlers["$/progress"]
+  ---@diagnostic disable-next-line
   vim.lsp.handlers["$/progress"] = function(...)
     if type(f) == "function" then f(...) end
     handler(...)
+  end
+  local f2 = vim.g.display_message
+  if f2 ~= nil and type(f2) ~= "function" then return end
+  ---@diagnostic disable-next-line
+  vim.g.display_message = function(...)
+    if type(f2) == "function" then f2(...) end
+    messages_handler(...)
   end
 end
 
@@ -100,19 +128,21 @@ function LspProgressMessage:new(o)
   return o
 end
 
-function LspProgressMessage:schedule_deletion()
+function LspProgressMessage:schedule_deletion(delay)
+  if type(delay) ~= "number" or delay < 0 then delay = 5000 end
   LspProgressMessage.last_redrawn = nil
   vim.defer_fn(function()
     if type(LspProgressMessage.current_message) ~= "table" then return end
     if
       type(LspProgressMessage.current_message.updated) ~= "number"
-      or vim.loop.now() - LspProgressMessage.current_message.updated >= 4000
+      or vim.loop.now() - LspProgressMessage.current_message.updated
+        >= delay - 1000
     then
       LspProgressMessage.current_message = nil
       vim.cmd("redrawtabline")
       LspProgressMessage.last_redrawn = vim.loop.now()
     end
-  end, 5000)
+  end, delay)
 end
 
 function LspProgressMessage:update_state()
