@@ -17,7 +17,7 @@ function state.draw()
     buf = vim.api.nvim_get_current_buf()
   end
   if type(buf) ~= "number" or not vim.api.nvim_buf_is_valid(buf) then
-    return
+    return ""
   end
 
   local sections = config.current.sections
