@@ -105,6 +105,7 @@ function LspProgressMessage:set_up()
       updated = vim.loop.now(),
     })
     LspProgressMessage:schedule_deletion(2500)
+    LspProgressMessage:redraw()
   end
 
   local f = vim.lsp.handlers["$/progress"]
