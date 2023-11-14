@@ -110,8 +110,8 @@ function config.update(opts)
       opts.space = nil
     else
       if
-        opts.space.highlight ~= nil
-        and type(opts.space.highlight) ~= "string"
+          opts.space.highlight ~= nil
+          and type(opts.space.highlight) ~= "string"
       then
         vim.notify(
           "Invalid space.highlight: " .. vim.inspect(opts.space.highlight),
@@ -123,11 +123,11 @@ function config.update(opts)
         opts.space.highlight = nil
       end
       if
-        opts.space.char ~= nil
-        and (
-          type(opts.space.char) ~= "string"
-          or vim.fn.strcharlen(opts.space.char) ~= 1
-        )
+          opts.space.char ~= nil
+          and (
+            type(opts.space.char) ~= "string"
+            or vim.fn.strcharlen(opts.space.char) ~= 1
+          )
       then
         vim.notify(
           "Invalid space.char: " .. vim.inspect(opts.space.highlight),
@@ -139,11 +139,11 @@ function config.update(opts)
         opts.space.char = nil
       end
       if
-        opts.space.edge ~= nil
-        and (
-          type(opts.space.edge) ~= "string"
-          or vim.fn.strcharlen(opts.space.edge) > 1
-        )
+          opts.space.edge ~= nil
+          and (
+            type(opts.space.edge) ~= "string"
+            or vim.fn.strcharlen(opts.space.edge) > 1
+          )
       then
         vim.notify(
           "Invalid space.edge: " .. vim.inspect(opts.space.highlight),
