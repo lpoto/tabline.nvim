@@ -12,10 +12,8 @@ local do_error
 ---@field title string?
 ---@field message string?
 ---@field percentage number?
----@field state number?
 ---@field kind table|string
 local LspProgressMessage = {
-  spinner_frames = { '⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷' },
   ---@type LspProgressMessage
   kind = {
     BEGIN = 'begin',
@@ -62,8 +60,6 @@ function LspProgressMessage:set_up()
       local token = result.token
 
       local data = notifications.get_data(client_id, token)
-      LspProgressMessage:update_state()
-
       if not val.kind then return end
       if val.kind == LspProgressMessage.kind.BEGIN then
         data = notifications.add_data(client_id, token, val)
@@ -157,7 +153,6 @@ function LspProgressMessage:schedule_deletion(delay)
       end
     end
     LspProgressMessage.deletion_schedule = uv.now() + delay
-    LspProgressMessage.last_redrawn = nil
     vim.defer_fn(function()
       local ok, err = pcall(function()
         LspProgressMessage.deletion_schedule = nil
@@ -168,8 +163,7 @@ function LspProgressMessage:schedule_deletion(delay)
           >= delay - 1000
         then
           LspProgressMessage.current_message = nil
-          vim.cmd 'redrawtabline'
-          LspProgressMessage.last_redrawn = uv.now()
+          LspProgressMessage:redraw()
         end
       end)
       if not ok then
@@ -182,73 +176,21 @@ function LspProgressMessage:schedule_deletion(delay)
   end
 end
 
-function LspProgressMessage:update_state()
-  local ok, v = pcall(function()
-    if LspProgressMessage.updating_state then
-      LspProgressMessage.updating_state_idx = 1
-      return
-    end
-    if
-      type(LspProgressMessage.updating_state_idx) ~= 'number'
-      or LspProgressMessage.updating_state_idx == 0
-    then
-      LspProgressMessage.updating_state_idx = 0
-    end
-    if LspProgressMessage.updating_state_idx > 5 then
-      LspProgressMessage.updating_state_idx = 0
-      LspProgressMessage.state_updated = nil
-      LspProgressMessage.state = nil
-      vim.cmd 'redrawtabline'
-      return
-    end
-    LspProgressMessage.updating_state_idx = LspProgressMessage
-      .updating_state_idx
-      + 1
-    LspProgressMessage.updating_state = true
-    vim.defer_fn(function()
-      local ok, v = pcall(function()
-        if
-          type(LspProgressMessage.state) ~= 'number'
-          or LspProgressMessage.state <= 0
-        then
-          LspProgressMessage.state = 1
-        else
-          LspProgressMessage.state = LspProgressMessage.state + 1
-        end
-        if LspProgressMessage.state > #LspProgressMessage.spinner_frames then
-          LspProgressMessage.state = 1
-        end
-        LspProgressMessage.state_updated = uv.now()
-        LspProgressMessage.updating_state = false
-        LspProgressMessage:update_state()
-      end)
-      if not ok then
-        return do_error(v)
-      end
-      return v
-    end, 100)
-  end)
-  if not ok then
-    return do_error(v)
-  end
-  return v
-end
-
 function LspProgressMessage:redraw()
-  local ok, err = pcall(function()
-    if
-      LspProgressMessage.last_redrawn ~= nil
-      and uv.now() - LspProgressMessage.last_redrawn < 50
-    then
-      return
+  LspProgressMessage.__needs_redraw = true
+  if LspProgressMessage.__is_redrawing then return end
+  LspProgressMessage.__is_redrawing = true
+  vim.defer_fn(function()
+    local ok, err = pcall(function()
+      if not LspProgressMessage.__needs_redraw then return end
+      LspProgressMessage.__needs_redraw = false
+      LspProgressMessage.__is_redrawing = false
+      util.redraw_tabline()
+    end)
+    if not ok then
+      return do_error(err)
     end
-    LspProgressMessage.last_redrawn = uv.now()
-    util.redraw_tabline()
-  end)
-  if not ok then
-    return do_error(err)
-  end
-  return err
+  end, 100)
 end
 
 function LspProgressMessage:format(max_width)
@@ -272,20 +214,6 @@ function LspProgressMessage:format(max_width)
         max_width = max_width - n - 1
       end
     end
-    if
-      type(LspProgressMessage.state) == 'number'
-      and LspProgressMessage.spinner_frames[LspProgressMessage.state]
-    then
-      local s2 = LspProgressMessage.spinner_frames[LspProgressMessage.state]
-      local n = vim.fn.strdisplaywidth(s2)
-      if n > 0 and n + 1 < max_width then
-        s = s2 .. ' ' .. s
-        max_width = max_width - n - 1
-      end
-    elseif max_width >= 2 then
-      s = '  ' .. s
-      max_width = max_width - 2
-    end
 
     if type(self.percentage) == 'number' and max_width >= 5 then
       local s2 = string.format(' %3d', self.percentage) .. '٪'
@@ -296,7 +224,7 @@ function LspProgressMessage:format(max_width)
       s = s .. s2
       max_width = max_width - vim.fn.strdisplaywidth(s2)
     end
-    if type(self.message) == 'string' then
+    if type(self.message) == 'string' and max_width > 2 then
       local msg = self.message
         :gsub('\n', ' '):gsub('\r', ' '):gsub('\t', ' ')
         :gsub('%s+', ' '):gsub('%%', '٪')
