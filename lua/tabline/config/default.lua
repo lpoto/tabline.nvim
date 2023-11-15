@@ -3,7 +3,6 @@ local enum = require 'tabline.enum'
 
 return {
   hide_statusline = true,
-  redraw_events = {},
   space = {
     char = '—',
     edge = '•',
@@ -14,30 +13,23 @@ return {
       {
         align = enum.alignment.LEFT,
         highlight = 'TablineSel',
+        content = builtin.tabcount
       },
       {
         align = enum.alignment.LEFT,
         highlight = 'Tabline',
-        -- content returns the text to display in the tabline
         content = builtin.lsp_progress,
-        -- compress is called when the text returned by content is
-        -- too long to fit in the tabline and should be shortened
-        compress = builtin.compress_lsp_progress, --
       },
     },
     {
       {
         align = enum.alignment.CENTER,
-        content = '',
-        -- empty_width determines the width of the section part
-        -- when its content is empty, 0 by default
         empty_width = 6,
       },
       {
         align = enum.alignment.CENTER,
         highlight = 'TablineSel',
         content = builtin.filename,
-        compress = builtin.compress_filename,
       },
       {
         align = enum.alignment.CENTER,

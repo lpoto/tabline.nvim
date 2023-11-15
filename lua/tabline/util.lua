@@ -1,9 +1,8 @@
-local enum = require 'tabline.enum'
-local util = {}
+local health = require 'tabline.health'
 
-local do_error
+local M = {}
 
-function util.get_option(name, opts)
+function M.get_option(name, opts)
   local ok, v = pcall(function()
     if type(opts) ~= 'table' then opts = {} end
     if type(name) ~= 'string' then return nil end
@@ -22,16 +21,16 @@ function util.get_option(name, opts)
     vim.api.nvim_get_option(name)
   end)
   if not ok then
-    return do_error(v)
+    return health.show_error(v)
   end
   return v
 end
 
-function util.redraw_tabline()
-  util.exec 'redrawtabline'
+function M.redraw_tabline()
+  M.exec 'redrawtabline'
 end
 
-function util.exec(cmd)
+function M.exec(cmd)
   local ok, v = pcall(function()
     if vim.api.nvim_exec2 then
       return vim.api.nvim_exec2(cmd, {})
@@ -44,15 +43,9 @@ function util.exec(cmd)
     end
   end)
   if not ok then
-    do_error(v)
+    return health.show_error(v)
   end
   return v
 end
 
-function do_error(msg)
-  msg = '[tabline.util] Error: ' .. vim.inspect(msg)
-  util.error = msg
-  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
-end
-
-return util
+return M

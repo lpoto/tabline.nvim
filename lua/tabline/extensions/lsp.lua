@@ -1,11 +1,10 @@
 local util = require 'tabline.util'
 local enum = require 'tabline.enum'
+local health = require 'tabline.health'
 ---@type table
 local uv = vim.uv or vim.loop
 
 local lsp = {}
-
-local do_error
 
 ---@class LspProgressMessage
 ---@field name string?
@@ -22,12 +21,8 @@ local LspProgressMessage = {
   },
 }
 
-function lsp.get_progress_message()
-  return lsp.compress_progress_message(200)
-end
-
-function lsp.compress_progress_message(width)
-  if lsp.error then return end
+function lsp.get_progress_message(width)
+  if health.has_errors() then return end
   local ok, v = pcall(function()
     LspProgressMessage:set_up()
     if type(LspProgressMessage.current_message) == 'table' then
@@ -35,7 +30,7 @@ function lsp.compress_progress_message(width)
     end
   end)
   if not ok then
-    return do_error(v)
+    return health.show_error(v)
   end
   return v
 end
@@ -43,12 +38,12 @@ end
 local notifications = {}
 
 function LspProgressMessage:set_up()
-  if lsp.error then return end
+  if health.has_errors() then return end
   local did_set_up, err = pcall(function()
     if LspProgressMessage.is_set_up then return end
     LspProgressMessage.is_set_up = true
     local handler = function(_, result, ctx)
-      if lsp.error then return end
+      if health.has_errors() then return end
       local client_id = ctx.client_id
       local ok, client = pcall(vim.lsp.get_client_by_id, client_id)
       local client_name = client_id
@@ -99,7 +94,7 @@ function LspProgressMessage:set_up()
       LspProgressMessage:redraw()
     end
     local messages_handler = function(opts)
-      if lsp.error then return end
+      if health.has_errors() then return end
       if type(opts) ~= 'table' then return end
       local title = opts.title
       if type(title) ~= 'string' then title = '' end
@@ -131,7 +126,7 @@ function LspProgressMessage:set_up()
     end
   end)
   if not did_set_up then
-    return do_error(err)
+    return health.show_error(err)
   end
   return err
 end
@@ -167,12 +162,12 @@ function LspProgressMessage:schedule_deletion(delay)
         end
       end)
       if not ok then
-        return do_error(err)
+        return health.show_error(err)
       end
     end, delay)
   end)
   if not ok then
-    return do_error(err)
+    return health.show_error(err)
   end
 end
 
@@ -188,7 +183,7 @@ function LspProgressMessage:redraw()
       util.redraw_tabline()
     end)
     if not ok then
-      return do_error(err)
+      return health.show_error(err)
     end
   end, 100)
 end
@@ -242,7 +237,7 @@ function LspProgressMessage:format(max_width)
     return s
   end)
   if not ok then
-    return do_error(e)
+    return health.show_error(e)
   end
   return e
 end
@@ -275,12 +270,6 @@ function notifications.get_data(client_id, token)
   local d = notifications.data[client_id][token]
   if not d then return end
   return d
-end
-
-function do_error(msg)
-  msg = '[tabline.state.lsp] Error: ' .. vim.inspect(msg)
-  lsp.error = msg
-  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
 end
 
 return lsp

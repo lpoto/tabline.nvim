@@ -1,13 +1,13 @@
 local util = require 'tabline.util'
-local state = require 'tabline.state'
 local enum = require 'tabline.enum'
+local health = require 'tabline.health'
 ---@type table
 local uv = vim.uv or vim.loop
 
 local M = {}
 local data = {}
 
-local watch, fetch_data, fetch_gitdir, redrawtabline, do_error
+local watch, fetch_data, fetch_gitdir, redrawtabline
 
 --- Starts the git watcher. This will create an autocommand
 --- that will watch for directory changes, and will create
@@ -15,8 +15,8 @@ local watch, fetch_data, fetch_gitdir, redrawtabline, do_error
 --- On HEAD changes in the git directory, the watcher will
 --- refetch the git data and trigger a redraw of the tabline.
 function M.watch()
+  data.__initialized = true
   local ok, e = pcall(function()
-    data.__initialized = true
     local group = vim.api.nvim_create_augroup(
       enum.AUGROUP .. '_GitWatcher',
       { clear = true })
@@ -33,7 +33,7 @@ function M.watch()
     })
   end)
   if not ok then
-    do_error(e)
+    health.show_error(e)
   end
 end
 
@@ -69,16 +69,16 @@ function watch(gitdir)
   end
   local ok, e = pcall(uv.new_fs_event)
   if not ok then
-    return do_error(e)
+    return health.show_error(e)
   end
   data.watcher = e
   if not data.watcher or not data.watcher.start then
-    return do_error 'Failed to create fs event'
+    return health.show_error 'Failed to create fs event'
   end
   data.watcher:start(gitdir, {}, function(err, filename, _)
     vim.schedule(function()
       ok, e = pcall(function()
-        if M.error or state.error or util.error then
+        if health.has_errors() then
           pcall(uv.fs_event_stop, data.watcher)
           return
         end
@@ -94,7 +94,7 @@ function watch(gitdir)
       end)
       if not ok then
         pcall(uv.fs_event_stop, data.watcher)
-        do_error(e)
+        health.show_error(e)
       end
     end)
   end)
@@ -105,7 +105,7 @@ function watch(gitdir)
 end
 
 function fetch_data()
-  if not data.__needs_refetch or M.error or state.error or util.error then
+  if not data.__needs_refetch or health.has_errors() then
     return
   end
   data.__needs_refetch = false
@@ -146,7 +146,7 @@ function fetch_data()
 end
 
 function redrawtabline()
-  if not data.__needs_redraw or M.error or state.error or util.error then
+  if not data.__needs_redraw or health.has_errors() then
     return
   end
   data.__needs_redraw = false
@@ -170,12 +170,6 @@ function fetch_gitdir(callback)
       callback(git_dir)
     end,
   })
-end
-
-function do_error(msg)
-  msg = '[tabline.state.git] Error: ' .. vim.inspect(msg)
-  M.error = msg
-  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
 end
 
 return M

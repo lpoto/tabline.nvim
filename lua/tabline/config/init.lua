@@ -4,67 +4,61 @@ local config = {}
 
 config.current = require 'tabline.config.default'
 
+local validator = {}
+
 function config.update(opts)
   if type(opts) ~= 'table' then opts = {} end
-  if opts.space ~= nil then
-    if type(opts.space) ~= 'table' then
-      vim.notify(
-        'Invalid space: ' .. vim.inspect(opts.space),
-        vim.log.levels.WARN,
-        {
-          title = enum.TITLE,
-        }
-      )
-      opts.space = nil
-    else
-      if
-        opts.space.highlight ~= nil
-        and type(opts.space.highlight) ~= 'string'
-      then
-        vim.notify(
-          'Invalid space.highlight: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.WARN,
-          {
-            title = enum.TITLE,
-          }
-        )
-        opts.space.highlight = nil
-      end
-      if
-        opts.space.char ~= nil
-        and (
-          type(opts.space.char) ~= 'string'
-          or vim.fn.strdisplaywidth(opts.space.char) ~= 1
-        )
-      then
-        vim.notify(
-          'Invalid space.char: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.WARN,
-          {
-            title = enum.TITLE,
-          }
-        )
-        opts.space.char = nil
-      end
-      if
-        opts.space.edge ~= nil
-        and (
-          type(opts.space.edge) ~= 'string'
-          or vim.fn.strdisplaywidth(opts.space.edge) > 1
-        )
-      then
-        vim.notify(
-          'Invalid space.edge: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.WARN,
-          {
-            title = enum.TITLE,
-          }
-        )
-        opts.space.edge = nil
-      end
-    end
+  local ok, e = pcall(validator.validate_config, opts)
+  if not ok then
+    vim.notify(
+      'Invalid config: ' .. vim.inspect(e),
+      vim.log.levels.WARN, { title = enum.TITLE }
+    )
+    return
   end
   config.current = vim.tbl_extend('force', config.current, opts)
+end
+
+function validator.validate_config(opts)
+  assert(type(opts) == 'table', 'Invalid config: ' .. vim.inspect(opts))
+  assert(
+    not opts.hide_statusline or
+    type(opts.hide_statusline) == 'boolean',
+    'Invalid hide_statusline: ' .. vim.inspect(opts.hide_statusline))
+  validator.validate_space_config(opts.space)
+  validator.validate_sections(opts.sections)
+end
+
+function validator.validate_space_config(space)
+  if not space then return end
+  assert(type(space) == 'table', 'Invalid space config: ' .. vim.inspect(space))
+  assert(
+    not space.highlight or type(space.highlight) == 'string',
+    'Invalid space.highlight: ' .. vim.inspect(space.highlight)
+  )
+  assert(
+    not space.char or (
+      type(space.char) == 'string'
+      and vim.fn.strdisplaywidth(space.char) <= 1
+    ),
+    'Invalid space.char: ' .. vim.inspect(space.char)
+  )
+  if space.char == '' then space.char = ' ' end
+  assert(
+    not space.edge or (
+      type(space.edge) == 'string'
+      and vim.fn.strdisplaywidth(space.edge) <= 1
+    ),
+    'Invalid space.edge: ' .. vim.inspect(space.edge)
+  )
+end
+
+function validator.validate_sections(sections)
+  if not sections then return end
+  assert(type(sections) == 'table', 'Invalid sections: ' .. vim.inspect(sections))
+  for _, section in ipairs(sections) do
+    assert(type(section) == 'table', 'Invalid section: ' .. vim.inspect(section))
+  end
 end
 
 return config
