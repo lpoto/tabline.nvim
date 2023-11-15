@@ -1,15 +1,14 @@
 local builtin = require 'tabline.builtin'
 local enum = require 'tabline.enum'
-
 local config = {}
 
-config.current = {
-  hide_statusline = false,
+local DEFAULT = {
+  hide_statusline = true,
   redraw_events = {},
   space = {
     char = '—',
-    highlight = 'TablineFill',
     edge = '•',
+    highlight = 'TablineFill',
   },
   -- NOTE: items displayed in the tabline are grouped
   -- in sections. Each sections receives equal space
@@ -93,6 +92,8 @@ config.current = {
     },
   },
 }
+
+config.current = DEFAULT
 
 function config.update(opts)
   if type(opts) ~= 'table' then opts = {} end
