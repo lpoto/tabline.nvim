@@ -15,8 +15,8 @@ An example using [Lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
 require("tabline").setup({
   "lpoto/tabline.nvim",
-  event = "VeryLazy",
-  config = true,
+  event = { 'BufRead', 'BufNewFile', 'BufNew' },
+  opts = {}
 })
 ```
 
