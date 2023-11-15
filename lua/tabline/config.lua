@@ -101,7 +101,7 @@ function config.update(opts)
     if type(opts.space) ~= 'table' then
       vim.notify(
         'Invalid space: ' .. vim.inspect(opts.space),
-        vim.log.levels.ERROR,
+        vim.log.levels.WARN,
         {
           title = enum.TITLE,
         }
@@ -114,7 +114,7 @@ function config.update(opts)
       then
         vim.notify(
           'Invalid space.highlight: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.ERROR,
+          vim.log.levels.WARN,
           {
             title = enum.TITLE,
           }
@@ -130,7 +130,7 @@ function config.update(opts)
       then
         vim.notify(
           'Invalid space.char: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.ERROR,
+          vim.log.levels.WARN,
           {
             title = enum.TITLE,
           }
@@ -146,7 +146,7 @@ function config.update(opts)
       then
         vim.notify(
           'Invalid space.edge: ' .. vim.inspect(opts.space.highlight),
-          vim.log.levels.ERROR,
+          vim.log.levels.WARN,
           {
             title = enum.TITLE,
           }

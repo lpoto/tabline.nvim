@@ -278,9 +278,9 @@ function notifications.get_data(client_id, token)
 end
 
 function do_error(msg)
-  msg = 'Lsp progress error: ' .. vim.inspect(msg)
+  msg = '[tabline.state.lsp] Error: ' .. vim.inspect(msg)
   lsp.error = msg
-  vim.notify(msg, vim.log.levels.ERROR, { title = enum.TITLE })
+  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
 end
 
 return lsp

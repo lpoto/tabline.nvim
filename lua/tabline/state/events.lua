@@ -73,7 +73,7 @@ function get_callback(group)
 end
 
 function error(msg)
-  vim.notify(msg, vim.log.levels.ERROR, {
+  vim.notify(msg, vim.log.levels.WARN, {
     title = 'tabline.nvim',
   })
 end

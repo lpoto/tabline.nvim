@@ -50,9 +50,9 @@ function util.exec(cmd)
 end
 
 function do_error(msg)
-  msg = 'Util error: ' .. vim.inspect(msg)
+  msg = '[tabline.util] Error: ' .. vim.inspect(msg)
   util.error = msg
-  vim.notify(msg, vim.log.levels.ERROR, { title = enum.TITLE })
+  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
 end
 
 return util

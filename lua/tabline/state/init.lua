@@ -206,9 +206,9 @@ function state.check_wintype()
 end
 
 function error(msg)
-  msg = 'Error drawing tabline: ' .. vim.inspect(msg)
+  msg = '[tabline.state] Error: ' .. vim.inspect(msg)
   state.error = msg
-  vim.notify(msg, vim.log.levels.ERROR, { title = enum.TITLE })
+  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
   return vim.api.nvim_buf_get_name(0)
 end
 

@@ -173,9 +173,9 @@ function fetch_gitdir(callback)
 end
 
 function do_error(msg)
-  msg = 'Git watch error: ' .. vim.inspect(msg)
+  msg = '[tabline.state.git] Error: ' .. vim.inspect(msg)
   M.error = msg
-  vim.notify(msg, vim.log.levels.ERROR, { title = enum.TITLE })
+  vim.notify(msg, vim.log.levels.WARN, { title = enum.TITLE })
 end
 
 return M

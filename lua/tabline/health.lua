@@ -1,32 +1,31 @@
-local state = require 'tabline.state'
-local util = require 'tabline.util'
-local git = require 'tabline.state.git'
-local lsp = require 'tabline.state.lsp'
-
 local health = {}
 
+local get_error
 function health.check()
   vim.health.start 'Tabline'
   local did_error = false
-  if state.error ~= nil then
-    did_error = true
-    vim.health.error(state.error)
-  end
-  if git.error ~= nil then
-    did_error = true
-    vim.health.error(git.error)
-  end
-  if util.error ~= nil then
-    did_error = true
-    vim.health.error(util.error)
-  end
-  if lsp.error ~= nil then
-    did_error = true
-    vim.health.error(lsp.error)
+  for _, m in ipairs {
+    'tabline.state',
+    'tabline.util',
+    'tabline.state.git',
+    'tabline.state.lsp',
+  } do
+    local err = get_error(m)
+    if err then
+      did_error = true
+      vim.health.error(err)
+    end
   end
   if not did_error then
     vim.health.ok ''
   end
+end
+
+function get_error(m)
+  if type(m) ~= 'string' or not package.loaded[m] then return end
+  local ok, mod = pcall(require, m)
+  if not ok or type(mod) ~= 'table' or type(mod.error) ~= 'string' then return end
+  return mod.error
 end
 
 return health
