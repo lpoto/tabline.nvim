@@ -125,7 +125,7 @@ function config.update(opts)
         opts.space.char ~= nil
         and (
           type(opts.space.char) ~= 'string'
-          or vim.fn.strcharlen(opts.space.char) ~= 1
+          or vim.fn.strdisplaywidth(opts.space.char) ~= 1
         )
       then
         vim.notify(
@@ -141,7 +141,7 @@ function config.update(opts)
         opts.space.edge ~= nil
         and (
           type(opts.space.edge) ~= 'string'
-          or vim.fn.strcharlen(opts.space.edge) > 1
+          or vim.fn.strdisplaywidth(opts.space.edge) > 1
         )
       then
         vim.notify(

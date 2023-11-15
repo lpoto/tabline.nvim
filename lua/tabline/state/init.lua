@@ -35,6 +35,7 @@ function state.draw()
     local section_count = #sections
     if section_count == 0 then return '' end
     local section_width = math.floor(max_width / section_count)
+    local section_width_c = math.ceil(max_width / section_count)
     if section_width <= 0 then return '' end
 
     for i, section_items in ipairs(sections) do
@@ -43,12 +44,11 @@ function state.draw()
         return error('Invalid sections: ' .. vim.inspect(section_items))
       end
       local width = 0
-      if i == section_count then
-        width = max_width
+      if i == #sections then
+        width = section_width_c
       else
         width = section_width
       end
-      max_width = max_width - width
       local parts = {}
       for _, item in ipairs(section_items) do
         if type(item) ~= 'table' then
@@ -107,7 +107,12 @@ function state.draw()
                     content = c,
                     max_width = width - 2,
                   }
-                  if type(c) == 'string' then n = vim.fn.strcharlen(c) end
+                  if type(c) == 'string' then
+                    n = vim.fn.strcharlen(c)
+                  else
+                    c = ''
+                    n = 0
+                  end
                 end
               end
               if type(c) == 'string' and n <= width - 2 then
@@ -151,12 +156,12 @@ function state.draw()
           end
         end
       end
+      local spacer_width = math.floor(width / 2)
       s = s .. (str_parts['left'] or '')
-      local n1 = math.floor(width / 2)
-      s = s .. state.get_spacer(n1)
-      width = width - n1
+      s = s .. state.get_spacer(spacer_width)
       s = s .. (str_parts['center'] or '')
-      s = s .. state.get_spacer(width)
+      spacer_width = width - spacer_width
+      s = s .. state.get_spacer(spacer_width)
       s = s .. (str_parts['right'] or '')
     end
   end)

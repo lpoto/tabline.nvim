@@ -16,9 +16,26 @@ end
 function builtin.compress_filename(opts)
   if type(opts) ~= 'table' then opts = {} end
   local filename = opts.content
-  local max_width = opts.max_width
-  if filename:len() == 0 or max_width <= 0 then return end
-  return vim.fn.fnamemodify(filename, ':t')
+  local max_width = opts.max_width or 30
+
+  local ok, v = pcall(function()
+    if filename:len() == 0 or max_width <= 0 then return end
+    local k, tail = pcall(vim.fn.fnamemodify, filename, ':t')
+    if not k then
+      return vim.fn.pathshorten(filename, max_width)
+    end
+    if max_width >= filename:len() then return filename end
+    while max_width < filename:len() and filename:len() > tail:len() do
+      local c = nil
+      while c ~= '/' and c ~= '\\' and filename:len() > tail:len() do
+        c = filename:sub(1, 1)
+        filename = filename:sub(2)
+      end
+    end
+    return filename
+  end)
+  if not ok then return vim.fn.fnamemodify(filename, ':t') end
+  return v
 end
 
 function builtin.filename_suffix(opts)

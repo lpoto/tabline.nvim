@@ -25,7 +25,7 @@ local LspProgressMessage = {
 }
 
 function lsp.get_progress_message()
-  return lsp.compress_progress_message(nil)
+  return lsp.compress_progress_message(200)
 end
 
 function lsp.compress_progress_message(width)
@@ -253,24 +253,23 @@ end
 
 function LspProgressMessage:format(max_width)
   local ok, e = pcall(function()
-    if type(max_width) ~= 'number' then max_width = 200 end
+    if type(max_width) ~= 'number' then return '' end
     local s = ''
     if type(self.name) == 'string' then
-      local n = vim.fn.strcharlen(self.name)
+      local n = vim.fn.strdisplaywidth(self.name)
       if n > 0 and n <= max_width - 2 then
         s = '[' .. self.name .. ']'
-        max_width = max_width - vim.fn.strcharlen(s) - 2
+        max_width = max_width - n - 2
       end
     end
     if max_width <= 1 then return s end
     local added_title = false
     if type(self.title) == 'string' then
-      local n = vim.fn.strcharlen(self.title)
-      if n > 0 and n + 3 < max_width then
-        local s2 = ' ' .. self.title
-        s = s .. s2
+      local n = vim.fn.strdisplaywidth(self.title)
+      if n > 0 and n + 1 < max_width then
+        s = s .. ' ' .. self.title
         added_title = true
-        max_width = max_width - vim.fn.strcharlen(s2)
+        max_width = max_width - n - 1
       end
     end
     if
@@ -278,9 +277,11 @@ function LspProgressMessage:format(max_width)
       and LspProgressMessage.spinner_frames[LspProgressMessage.state]
     then
       local s2 = LspProgressMessage.spinner_frames[LspProgressMessage.state]
-        .. ' '
-      s = s2 .. s
-      max_width = max_width - vim.fn.strcharlen(s2)
+      local n = vim.fn.strdisplaywidth(s2)
+      if n > 0 and n + 1 < max_width then
+        s = s2 .. ' ' .. s
+        max_width = max_width - n - 1
+      end
     elseif max_width >= 2 then
       s = '  ' .. s
       max_width = max_width - 2
@@ -293,18 +294,21 @@ function LspProgressMessage:format(max_width)
         added_title = false
       end
       s = s .. s2
-      max_width = max_width - vim.fn.strcharlen(s2)
+      max_width = max_width - vim.fn.strdisplaywidth(s2)
     end
     if type(self.message) == 'string' then
-      local n = vim.fn.strcharlen(self.message)
+      local msg = self.message
+        :gsub('\n', ' '):gsub('\r', ' '):gsub('\t', ' ')
+        :gsub('%s+', ' '):gsub('%%', '٪')
+      local n = vim.fn.strdisplaywidth(msg)
       if n > 0 and n < max_width - 1 then
-        if added_title then
+        if added_title and n < max_width - 2 then
           s = s .. ':'
           added_title = false
+          n = n + 1
         end
-        local s2 = ' ' .. self.message
-        s = s .. s2
-        max_width = max_width - vim.fn.strcharlen(s2)
+        s = s .. ' ' .. msg
+        max_width = max_width - n - 1
       end
     end
     return s
