@@ -22,4 +22,4 @@ require("tabline").setup({
 
 ###
 
-See [config](./lua/tabline/config.lua) for the default configuration.
+See [config](./lua/tabline/config/default.lua) for the default configuration.

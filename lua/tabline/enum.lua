@@ -1,6 +1,7 @@
 ---@class TablineEnum
 return {
-  ALIGN = {
+  ---@class TablineAlignmentEnum
+  alignment = {
     LEFT = 'left',
     CENTER = 'center',
     RIGHT = 'right',

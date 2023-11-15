@@ -12,24 +12,24 @@ local error
 local buf = nil
 
 function state.draw()
-  if state.error ~= nil or util.error then
-    return vim.api.nvim_buf_get_name(0)
-  end
-
-  if state.check_buftype() and state.check_wintype() then
-    buf = vim.api.nvim_get_current_buf()
-  end
-  if type(buf) ~= 'number' or not vim.api.nvim_buf_is_valid(buf) then
-    return ''
-  end
-
-  local sections = config.current.sections
-  if type(sections) ~= 'table' then
-    return error 'Sections must be a table'
-  end
-
   local s = ''
   local ok, e = pcall(function()
+    if state.error ~= nil or util.error then
+      return vim.api.nvim_buf_get_name(0)
+    end
+
+    if state.check_buftype() and state.check_wintype() then
+      buf = vim.api.nvim_get_current_buf()
+    end
+    if type(buf) ~= 'number' or not vim.api.nvim_buf_is_valid(buf) then
+      return ''
+    end
+
+    local sections = config.current.sections
+    if type(sections) ~= 'table' then
+      return error 'Sections must be a table'
+    end
+
     local max_width = util.get_option 'columns'
     if not max_width then max_width = 80 end
     local section_count = #sections
@@ -54,11 +54,11 @@ function state.draw()
         if type(item) ~= 'table' then
           return error('Invalid section item: ' .. vim.inspect(item))
         end
-        local align = item.align or enum.ALIGN.LEFT
+        local align = item.align or enum.alignment.LEFT
         if
-          align ~= enum.ALIGN.LEFT
-          and align ~= enum.ALIGN.CENTER
-          and align ~= enum.ALIGN.RIGHT
+          align ~= enum.alignment.LEFT
+          and align ~= enum.alignment.CENTER
+          and align ~= enum.alignment.RIGHT
         then
           return error('Invalid align: ' .. vim.inspect(align))
         end
@@ -93,7 +93,7 @@ function state.draw()
         })
       end
       local str_parts = {}
-      for _, v in pairs(enum.ALIGN or {}) do
+      for _, v in pairs(enum.alignment or {}) do
         str_parts[v] = ''
         if width > 2 then
           for _, v2 in ipairs(parts[v] or {}) do
