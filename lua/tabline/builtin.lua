@@ -38,7 +38,7 @@ end
 function builtin.diagnostic_error(opts)
   if type(opts) ~= 'table' then opts = {} end
   local n = #vim.diagnostic.get(opts.buf, {
-    severity = vim.diagnostic.severity.WARN,
+    severity = vim.diagnostic.severity.ERROR,
   })
   return n > 0 and ('E: %d'):format(n) or ''
 end
