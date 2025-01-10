@@ -27,7 +27,7 @@ function health.show_error(msg)
     from = info.name or 'unknown'
   end
   from = 'tabline.' .. from
-  msg = '[' .. from .. ']' .. vim.inspect(msg)
+  msg = '[' .. from .. '] ' .. msg
   if type(health.__errors) ~= 'table' then
     health.__errors = {}
   end
